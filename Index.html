@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro académico | Medicina Veterinaria</title>
+  <style>
+    :root { --navy:#17324d; --blue:#245b83; --teal:#087e8b; --ink:#243447; --muted:#5e6e7e; --line:#d7e0e8; --bg:#f2f6fa; --white:#fff; --success:#e9f7ef; --success-ink:#17613a; --error:#fff0ef; --error-ink:#9b2c2c; }
+    * { box-sizing:border-box; }
+    body { margin:0; padding:28px 14px 44px; background:var(--bg); color:var(--ink); font-family:Arial,Helvetica,sans-serif; line-height:1.45; }
+    .container { width:100%; max-width:900px; margin:0 auto; background:var(--white); border:1px solid var(--line); border-radius:16px; box-shadow:0 12px 34px rgba(23,50,77,.09); overflow:hidden; }
+    .header { padding:28px 30px 23px; background:linear-gradient(125deg,var(--navy),var(--blue)); color:white; }
+    .eyebrow { margin:0 0 8px; font-size:12px; letter-spacing:1px; text-transform:uppercase; font-weight:700; opacity:.9; }
+    h1 { margin:0; font-size:clamp(22px,3.2vw,30px); line-height:1.2; }
+    .header p { margin:10px 0 0; max-width:720px; font-size:14px; color:#e6f1f8; }
+    main { padding:26px 30px 30px; }
+    .notice { padding:12px 14px; border-left:4px solid var(--teal); background:#eef8fa; border-radius:6px; color:#264a5b; font-size:13px; margin-bottom:22px; }
+    .notice.warning { border-left-color:#b7791f; background:#fff8e7; color:#6f4b13; }
+    .section-title { margin:26px 0 14px; padding-bottom:8px; border-bottom:1px solid var(--line); font-size:16px; color:var(--navy); }
+    .section-title:first-child { margin-top:0; }
+    .grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+    .field { min-width:0; }
+    .field.full { grid-column:1 / -1; }
+    label { display:block; margin-bottom:6px; font-size:13px; font-weight:700; color:#334b60; }
+    .required { color:#b42318; }
+    input, select, textarea { width:100%; border:1px solid #bac8d5; border-radius:8px; background:#fff; color:var(--ink); padding:11px 12px; font-size:14px; font-family:inherit; min-height:43px; }
+    input:focus, select:focus, textarea:focus { outline:3px solid rgba(8,126,139,.16); border-color:var(--teal); }
+    input:disabled, select:disabled { background:#edf1f5; color:#596b7b; }
+    textarea { resize:vertical; min-height:95px; }
+    .help { display:block; margin-top:5px; color:var(--muted); font-size:12px; }
+    .btn { border:0; border-radius:8px; min-height:44px; padding:12px 18px; cursor:pointer; font-weight:700; font-size:14px; transition:background .15s ease; }
+    .btn:disabled { opacity:.6; cursor:not-allowed; }
+    .btn-primary { background:var(--teal); color:white; }
+    .btn-primary:hover:not(:disabled) { background:#066a75; }
+    .btn-secondary { background:#e6edf3; color:var(--navy); }
+    .btn-secondary:hover:not(:disabled) { background:#d6e1e9; }
+    .actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:20px; }
+    #zonaDatos { display:none; margin-top:8px; }
+    .message { display:none; margin:0 0 18px; padding:12px 14px; border-radius:8px; font-size:14px; }
+    .message.ok { display:block; background:var(--success); color:var(--success-ink); border:1px solid #b9e3c9; }
+    .message.error { display:block; background:var(--error); color:var(--error-ink); border:1px solid #f0c1bd; }
+    .privacy { display:flex; align-items:flex-start; gap:10px; margin-top:20px; font-size:12px; color:var(--muted); }
+    .privacy input { width:17px; min-height:17px; height:17px; margin-top:2px; flex:0 0 auto; }
+    .footer { border-top:1px solid var(--line); margin-top:26px; padding-top:16px; color:var(--muted); font-size:11px; }
+    .hidden { display:none !important; }
+    @media (max-width:640px) { body{padding:10px 8px 24px;} main{padding:20px 16px 24px;} .header{padding:24px 18px;} .grid{grid-template-columns:1fr;} .field.full{grid-column:auto;} .actions .btn{width:100%;} }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <p class="eyebrow">Carrera de Medicina Veterinaria</p>
+      <h1>Registro y actualización de datos académicos</h1>
+      <p>Información de los cuatro subproyectos de Sistemas de Producción Animal y Manejo de Sistemas de Producción Animal.</p>
+    </header>
+    <main>
+      <div id="mensaje" class="message" role="status" aria-live="polite"></div>
+      <div class="notice"><strong>Autorización académica:</strong> solo se comprueban la cédula, el periodo lectivo, el subproyecto y la sección contra la lista de clases. Los nombres, edad, correo, teléfono y residencia deben ser aportados directamente por el estudiante y escritos con datos reales y actuales.</div>
+
+      <form id="accesoForm">
+        <h2 class="section-title">1. Identificación y asignación académica</h2>
+        <fieldset id="camposAcceso" style="border:0;padding:0;margin:0;min-width:0">
+          <div class="grid">
+            <div class="field">
+              <label for="tipoCedula">Tipo de cédula <span class="required">*</span></label>
+              <select id="tipoCedula" required><option value="V">V — Venezolano/a</option><option value="E">E — Extranjero/a</option></select>
+            </div>
+            <div class="field">
+              <label for="numeroCedula">Número de cédula <span class="required">*</span></label>
+              <input id="numeroCedula" inputmode="numeric" autocomplete="off" maxlength="9" pattern="[0-9]{5,9}" placeholder="Ej. 12345678" required>
+              <small class="help">Escriba solo los dígitos, sin puntos, espacios ni guiones. No se eliminan ceros iniciales.</small>
+            </div>
+            <div class="field">
+              <label for="periodo">Periodo lectivo <span class="required">*</span></label>
+              <select id="periodo" required><option value="">Seleccione el periodo</option><option>2026-II</option><option>2027-I</option><option>2027-II</option></select>
+            </div>
+            <div class="field">
+              <label for="seccion">Sección o grupo <span class="required">*</span></label>
+              <select id="seccion" required><option value="">Seleccione la sección</option><option>D02</option><option>D03</option><option>D04</option><option>D05</option><option>D06</option><option>D07</option><option>D08</option><option>D09</option></select>
+            </div>
+            <div class="field full">
+              <label for="subproyecto">Subproyecto que cursa <span class="required">*</span></label>
+              <select id="subproyecto" required>
+                <option value="">Seleccione el subproyecto</option>
+                <option value="Sistemas de Producción Animal I">Sistemas de Producción Animal I — Primer semestre</option>
+                <option value="Sistemas de Producción Animal II">Sistemas de Producción Animal II — Segundo semestre</option>
+                <option value="Manejo de Sistemas de Producción Animal I">Manejo de Sistemas de Producción Animal I — Tercer semestre</option>
+                <option value="Manejo de Sistemas de Producción Animal II">Manejo de Sistemas de Producción Animal II — Cuarto semestre</option>
+              </select>
+            </div>
+          </div>
+        </fieldset>
+        <div class="actions"><button class="btn btn-primary" id="btnValidarAcceso" type="submit">VALIDAR MI ASIGNACIÓN</button></div>
+      </form>
+
+      <section id="zonaDatos" aria-labelledby="tituloDatos">
+        <div id="modoRegistro" class="notice"></div>
+        <form id="datosForm">
+          <h2 id="tituloDatos" class="section-title">2. Datos personales y de contacto</h2>
+          <div class="grid">
+            <div class="field">
+              <label for="primerApellido">Primer apellido <span class="required">*</span></label>
+              <input id="primerApellido" maxlength="60" autocomplete="family-name" placeholder="Ej. PÉREZ" required>
+            </div>
+            <div class="field">
+              <label for="segundoApellido">Segundo apellido</label>
+              <input id="segundoApellido" maxlength="60" placeholder="Ej. GÓMEZ">
+              <small class="help">Si no tiene segundo apellido, déjelo vacío.</small>
+            </div>
+            <div class="field">
+              <label for="primerNombre">Primer nombre <span class="required">*</span></label>
+              <input id="primerNombre" maxlength="60" autocomplete="given-name" placeholder="Ej. JUAN" required>
+            </div>
+            <div class="field">
+              <label for="segundoNombre">Segundo nombre</label>
+              <input id="segundoNombre" maxlength="60" placeholder="Ej. CARLOS">
+              <small class="help">Si no tiene segundo nombre, déjelo vacío.</small>
+            </div>
+            <div class="field">
+              <label for="edad">Edad actual (años) <span class="required">*</span></label>
+              <input id="edad" type="number" min="15" max="90" step="1" inputmode="numeric" required>
+            </div>
+            <div class="field">
+              <label for="correo">Correo de contacto actual <span class="required">*</span></label>
+              <input id="correo" type="email" maxlength="120" autocomplete="email" placeholder="estudiante@ejemplo.com" required>
+            </div>
+            <div class="field">
+              <label for="correoConfirmacion">Confirme su correo <span class="required">*</span></label>
+              <input id="correoConfirmacion" type="email" maxlength="120" autocomplete="email" placeholder="Escriba de nuevo el mismo correo" required>
+            </div>
+            <div class="field">
+              <label for="telefono">Número de teléfono actual <span class="required">*</span></label>
+              <input id="telefono" type="tel" maxlength="25" autocomplete="tel" pattern="[0-9+() .-]{7,25}" placeholder="Ej. +58 414 1234567" required>
+            </div>
+            <div class="field full">
+              <label for="residencia">Lugar de residencia <span class="required">*</span></label>
+              <input id="residencia" maxlength="120" autocomplete="address-level2" placeholder="Municipio, estado" required>
+              <small class="help">Indique municipio y estado. No aporte una dirección exacta si no es indispensable.</small>
+            </div>
+            <div class="field full">
+              <label for="observaciones">Otra información académica importante (opcional)</label>
+              <textarea id="observaciones" maxlength="500" placeholder="Observaciones pertinentes para la gestión docente. No incluya datos sensibles innecesarios."></textarea>
+            </div>
+          </div>
+
+          <h2 class="section-title">3. Verificación del correo y confirmación</h2>
+          <p class="help">Para un registro nuevo, el código llegará al correo que acaba de declarar. Para una actualización, llegará al correo de autenticación usado en el registro previo. Si ya no puede acceder a ese correo, contacte al docente para recuperar el acceso.</p>
+          <div class="actions"><button class="btn btn-secondary" id="btnSolicitarCodigo" type="button">ENVIAR CÓDIGO DE VERIFICACIÓN</button></div>
+          <p id="correoDestino" class="help" aria-live="polite"></p>
+          <div class="grid" style="margin-top:12px">
+            <div class="field">
+              <label for="codigoVerificacion">Código de verificación <span class="required">*</span></label>
+              <input id="codigoVerificacion" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="6 dígitos" required>
+              <small class="help">Vence en 5 minutos y solo puede utilizarse una vez.</small>
+            </div>
+          </div>
+          <label class="privacy" for="consentimiento">
+            <input id="consentimiento" type="checkbox" required>
+            <span>Declaro que los datos suministrados son veraces y actuales y autorizo su uso para fines de registro, comunicación y gestión académica de los subproyectos indicados. <span class="required">*</span></span>
+          </label>
+          <div class="actions">
+            <button class="btn btn-primary" id="btnGuardar" type="submit" disabled>GUARDAR / ACTUALIZAR REGISTRO</button>
+            <button class="btn btn-secondary" id="btnCambiar" type="button">CAMBIAR CÉDULA O CLASE</button>
+          </div>
+        </form>
+      </section>
+      <div class="footer">Uso académico. Los campos de nombre se convierten a mayúsculas y se ensamblan en la hoja Registros en una sola celda, en el orden: apellidos y luego nombres.</div>
+    </main>
+  </div>
+<script>
+  const byId = (id) => document.getElementById(id);
+  const accesoForm = byId('accesoForm');
+  const datosForm = byId('datosForm');
+  const zonaDatos = byId('zonaDatos');
+  const camposAcceso = byId('camposAcceso');
+  let accesoValidado = false;
+  let esActualizacion = false;
+  let codigoSolicitado = false;
+
+  function mostrarMensaje(texto, tipo) {
+    const el = byId('mensaje');
+    el.textContent = texto;
+    el.className = 'message ' + (tipo === 'ok' ? 'ok' : 'error');
+    el.scrollIntoView({behavior:'smooth', block:'nearest'});
+  }
+  function ocultarMensaje() { byId('mensaje').className = 'message'; byId('mensaje').textContent = ''; }
+  function datosAcceso() {
+    return {
+      tipoCedula: byId('tipoCedula').value,
+      numeroCedula: byId('numeroCedula').value.trim(),
+      periodo: byId('periodo').value,
+      subproyecto: byId('subproyecto').value,
+      seccion: byId('seccion').value
+    };
+  }
+  function datosPersonales() {
+    return {
+      primerApellido: byId('primerApellido').value,
+      segundoApellido: byId('segundoApellido').value,
+      primerNombre: byId('primerNombre').value,
+      segundoNombre: byId('segundoNombre').value,
+      edad: byId('edad').value,
+      correo: byId('correo').value.trim(),
+      correoConfirmacion: byId('correoConfirmacion').value.trim(),
+      telefono: byId('telefono').value.trim(),
+      residencia: byId('residencia').value.trim(),
+      observaciones: byId('observaciones').value,
+      consentimiento: byId('consentimiento').checked
+    };
+  }
+
+  accesoForm.addEventListener('submit', function(e) {
+    e.preventDefault(); ocultarMensaje();
+    const a = datosAcceso();
+    if (!/^[0-9]{5,9}$/.test(a.numeroCedula)) { mostrarMensaje('La cédula debe tener entre 5 y 9 dígitos, sin puntos, espacios ni guiones.', 'error'); return; }
+    if (!a.periodo || !a.subproyecto || !a.seccion) { mostrarMensaje('Seleccione periodo, subproyecto y sección antes de continuar.', 'error'); return; }
+    const btn = byId('btnValidarAcceso'); btn.disabled = true; btn.textContent = 'VALIDANDO...';
+    google.script.run.withSuccessHandler(function(r) {
+      btn.disabled = false; btn.textContent = 'VALIDAR MI ASIGNACIÓN';
+      if (!r || !r.ok) { mostrarMensaje((r && r.message) || 'No se pudo validar la asignación.', 'error'); return; }
+      accesoValidado = true; esActualizacion = Boolean(r.existeRegistro); codigoSolicitado = false;
+      camposAcceso.disabled = true;
+      zonaDatos.style.display = 'block';
+      byId('modoRegistro').textContent = esActualizacion
+        ? 'Se autorizó la asignación y existe un registro previo. Por seguridad, el código se enviará al correo de autenticación ya asociado; el correo nuevo que indique no reemplazará ese correo de acceso hasta ser verificado.'
+        : 'Se autorizó la asignación. Esta será una nueva ficha de datos; escriba cuidadosamente sus datos reales. El código se enviará al correo de contacto que declare aquí.';
+      byId('codigoVerificacion').value = '';
+      byId('btnGuardar').disabled = true;
+      mostrarMensaje(r.message, 'ok');
+      zonaDatos.scrollIntoView({behavior:'smooth', block:'start'});
+    }).withFailureHandler(function(err) {
+      btn.disabled = false; btn.textContent = 'VALIDAR MI ASIGNACIÓN';
+      mostrarMensaje(err && err.message ? err.message : 'Error de conexión con el servicio. Inténtelo nuevamente.', 'error');
+    }).validarAcceso(a);
+  });
+
+  byId('btnSolicitarCodigo').addEventListener('click', function() {
+    ocultarMensaje();
+    if (!accesoValidado) { mostrarMensaje('Primero valide la cédula y la asignación académica.', 'error'); return; }
+    if (!byId('correo').checkValidity() || !byId('correoConfirmacion').checkValidity()) { mostrarMensaje('Escriba un correo válido en ambos campos.', 'error'); return; }
+    if (byId('correo').value.trim().toLowerCase() !== byId('correoConfirmacion').value.trim().toLowerCase()) { mostrarMensaje('El correo y su confirmación no coinciden.', 'error'); return; }
+    const btn = byId('btnSolicitarCodigo'); btn.disabled = true; btn.textContent = 'ENVIANDO CÓDIGO...';
+    google.script.run.withSuccessHandler(function(r) {
+      btn.disabled = false; btn.textContent = 'SOLICITAR OTRO CÓDIGO';
+      if (!r || !r.ok) { mostrarMensaje((r && r.message) || 'No se pudo enviar el código.', 'error'); return; }
+      codigoSolicitado = true; byId('btnGuardar').disabled = false;
+      byId('correoDestino').textContent = 'Código enviado a: ' + r.correo + '. ' + r.message;
+      mostrarMensaje(r.message, 'ok');
+    }).withFailureHandler(function(err) {
+      btn.disabled = false; btn.textContent = 'ENVIAR CÓDIGO DE VERIFICACIÓN';
+      mostrarMensaje(err && err.message ? err.message : 'Error al solicitar el código. Inténtelo nuevamente.', 'error');
+    }).solicitarCodigo({...datosAcceso(), ...datosPersonales()});
+  });
+
+  ['primerApellido','segundoApellido','primerNombre','segundoNombre'].forEach(function(id) {
+    byId(id).addEventListener('input', function() {
+      const pos = this.selectionStart;
+      this.value = this.value.toLocaleUpperCase('es-VE');
+      try { this.setSelectionRange(pos, pos); } catch (_) {}
+    });
+  });
+  byId('numeroCedula').addEventListener('input', function() { this.value = this.value.replace(/\D/g, '').slice(0,9); });
+  byId('codigoVerificacion').addEventListener('input', function() { this.value = this.value.replace(/\D/g, '').slice(0,6); });
+
+  byId('btnCambiar').addEventListener('click', function() {
+    accesoValidado = false; esActualizacion = false; codigoSolicitado = false;
+    camposAcceso.disabled = false; zonaDatos.style.display = 'none'; accesoForm.reset(); datosForm.reset();
+    byId('btnValidarAcceso').textContent = 'VALIDAR MI ASIGNACIÓN';
+    byId('btnSolicitarCodigo').textContent = 'ENVIAR CÓDIGO DE VERIFICACIÓN';
+    byId('btnGuardar').disabled = true; byId('correoDestino').textContent = '';
+    ocultarMensaje(); accesoForm.scrollIntoView({behavior:'smooth', block:'start'});
+  });
+
+  datosForm.addEventListener('submit', function(e) {
+    e.preventDefault(); ocultarMensaje();
+    if (!accesoValidado) { mostrarMensaje('Primero valide la asignación académica.', 'error'); return; }
+    if (!codigoSolicitado) { mostrarMensaje('Primero solicite el código de verificación.', 'error'); return; }
+    const btn = byId('btnGuardar'); btn.disabled = true; btn.textContent = 'GUARDANDO...';
+    const payload = {...datosAcceso(), ...datosPersonales(), codigoVerificacion: byId('codigoVerificacion').value};
+    google.script.run.withSuccessHandler(function(r) {
+      btn.textContent = 'GUARDAR / ACTUALIZAR REGISTRO';
+      if (!r || !r.ok) { btn.disabled = false; mostrarMensaje((r && r.message) || 'No fue posible guardar el registro.', 'error'); return; }
+      mostrarMensaje(r.message, 'ok');
+      accesoForm.reset(); datosForm.reset(); camposAcceso.disabled = false; zonaDatos.style.display = 'none';
+      accesoValidado = false; esActualizacion = false; codigoSolicitado = false;
+      byId('btnValidarAcceso').textContent = 'VALIDAR MI ASIGNACIÓN';
+      byId('btnSolicitarCodigo').textContent = 'ENVIAR CÓDIGO DE VERIFICACIÓN';
+      byId('btnGuardar').disabled = true; byId('correoDestino').textContent = '';
+      window.scrollTo({top:0, behavior:'smooth'});
+    }).withFailureHandler(function(err) {
+      btn.disabled = false; btn.textContent = 'GUARDAR / ACTUALIZAR REGISTRO';
+      mostrarMensaje(err && err.message ? err.message : 'Error de conexión. Verifique su conexión e inténtelo de nuevo.', 'error');
+    }).guardarRegistro(payload);
+  });
+</script>
+</body>
+</html>
