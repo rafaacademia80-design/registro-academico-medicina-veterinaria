@@ -31,7 +31,7 @@ const HEADERS = {
   ROSTER: ['CEDULA', 'PERIODO', 'SUBPROYECTO', 'SECCION'],
   RECORDS: [
     'FECHA_REGISTRO', 'ULTIMA_ACTUALIZACION', 'CEDULA', 'NOMBRE_COMPLETO',
-    'EDAD', 'CORREO_CONTACTO', 'TELEFONO', 'RESIDENCIA', 'SUBPROYECTO',
+    'EDAD', 'FECHA_NACIMIENTO', 'CORREO_CONTACTO', 'TELEFONO', 'RESIDENCIA', 'SUBPROYECTO',
     'SEMESTRE', 'SECCION', 'PERIODO', 'OBSERVACIONES',
     'CORREO_VERIFICADO', 'ESTADO_CORREO'
   ],
@@ -248,6 +248,7 @@ function guardarRegistro(datos) {
         CEDULA: d.CEDULA,
         NOMBRE_COMPLETO: d.NOMBRE_COMPLETO,
         EDAD: d.EDAD,
+        FECHA_NACIMIENTO: d.FECHA_NACIMIENTO,
         CORREO_CONTACTO: d.CORREO_CONTACTO,
         TELEFONO: d.TELEFONO,
         RESIDENCIA: d.RESIDENCIA,
@@ -299,6 +300,7 @@ function normalizarAcceso_(d) {
   if (!CFG.PERIODOS.includes(acceso.PERIODO)) throw new Error('Seleccione un periodo lectivo válido.');
   if (!CFG.SUBPROYECTOS.includes(acceso.SUBPROYECTO)) throw new Error('Seleccione uno de los cuatro subproyectos autorizados.');
   if (!CFG.SECCIONES.includes(acceso.SECCION)) throw new Error('Seleccione una sección válida.');
+  verificarClaveYVentana_(d);
   return acceso;
 }
 
@@ -354,15 +356,24 @@ function buscarRegistros_(acceso) {
 
 function validarFormulario_(d) {
   const acceso = normalizarAcceso_(d);
-  const edad = Number(d.edad);
-  if (!Number.isInteger(edad) || edad < 15 || edad > 90) throw new Error('La edad debe ser un número entero entre 15 y 90.');
+  const mf = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(d.fechaNacimiento || ''));
+  if (!mf) throw new Error('Indique su fecha de nacimiento.');
+  const fnac = new Date(Number(mf[1]), Number(mf[2]) - 1, Number(mf[3]));
+  const hoy = new Date();
+  let edad = hoy.getFullYear() - fnac.getFullYear();
+  if (hoy.getMonth() < fnac.getMonth() || (hoy.getMonth() === fnac.getMonth() && hoy.getDate() < fnac.getDate())) edad--;
+  if (fnac.getMonth() !== Number(mf[2]) - 1 || edad < 15 || edad > 90) throw new Error('La fecha de nacimiento no es válida (se admiten edades de 15 a 90 años).');
   const email = String(d.correo || '').trim().toLowerCase();
   const emailConfirmacion = String(d.correoConfirmacion || '').trim().toLowerCase();
   if (!correoValido_(email)) throw new Error('Ingrese un correo electrónico válido.');
+  const dominio = email.split('@')[1] || '';
+  if (/^(gmial|gmai|gmil|gamil|gmail\.con|gmail\.co$|hotmial|hotmal|hotmail\.con|outlok|outlook\.con|yahoo\.con|yahooo|yaho\.)/.test(dominio)) {
+    throw new Error('Revise el dominio de su correo (' + dominio + '): parece tener un error de escritura.');
+  }
   if (email !== emailConfirmacion) throw new Error('El correo electrónico y su confirmación no coinciden.');
   const residencia = limpiarTexto_(d.residencia, 120);
   if (residencia.length < 3) throw new Error('Indique municipio y estado de residencia.');
-  const telefono = String(d.telefono || '').trim().replace(/\s+/g, ' ');
+  const telefono = normalizarTelefono_(d.telefono);
   const digitosTelefono = telefono.replace(/\D/g, '');
   if (digitosTelefono.length < 7 || digitosTelefono.length > 15 || !/^[0-9+()\-. ]+$/.test(telefono)) {
     throw new Error('Ingrese un teléfono válido, con entre 7 y 15 dígitos. Puede incluir código de país, espacios, paréntesis o guiones.');
@@ -386,10 +397,11 @@ function validarFormulario_(d) {
     SEGUNDO_NOMBRE: segundoNombre,
     NOMBRE_COMPLETO: nombreCompleto,
     EDAD: edad,
+    FECHA_NACIMIENTO: fnac,
     CORREO_CONTACTO: email,
-    TELEFONO: telefono,
-    RESIDENCIA: residencia,
-    OBSERVACIONES: limpiarTexto_(d.observaciones || '', 500),
+    TELEFONO: "'" + telefono,
+    RESIDENCIA: protegerFormula_(residencia),
+    OBSERVACIONES: protegerFormula_(limpiarTexto_(d.observaciones || '', 500)),
     consentimiento: true
   };
 }
@@ -400,6 +412,9 @@ function validarCampoNombre_(valor, etiqueta, obligatorio) {
   if (s.length < 2 || s.length > 60) throw new Error('El campo ' + etiqueta + ' debe contener entre 2 y 60 caracteres' + (obligatorio ? '.' : ' o dejarse vacío si no aplica.'));
   if (!/^[A-ZÁÉÍÓÚÜÑ]+(?:[ '\-][A-ZÁÉÍÓÚÜÑ]+)*$/.test(s)) {
     throw new Error('El campo ' + etiqueta + ' solo puede contener letras, espacios, apóstrofes o guiones. No use números.');
+  }
+  if (/^(.)\1+$/.test(s.replace(/[ '\-]/g, '')) || /^(NO|NA|NINGUNO|NINGUNA|SIN|XX+|ASD+|ABC)$/.test(s)) {
+    throw new Error('El campo ' + etiqueta + ' no parece un dato real. Escriba su nombre o apellido tal como aparece en su cédula.');
   }
   return s;
 }
@@ -479,4 +494,161 @@ function hashTexto_(raw) {
 function claveOtp_(acceso) {
   const raw = [acceso.CEDULA, acceso.PERIODO, acceso.SUBPROYECTO, acceso.SECCION].join('|');
   return 'otp_' + hashTexto_(raw).slice(0, 40);
+}
+
+function normalizarTelefono_(v) {
+  let s = String(v || '').replace(/[^\d+]/g, '').replace(/^(\+58|0058|58)/, '');
+  if (/^4/.test(s)) s = '0' + s;
+  if (!/^0(412|414|416|422|424|426)\d{7}$/.test(s)) {
+    throw new Error('Ingrese un celular venezolano válido, por ejemplo 0414-1234567 (operadoras 0412, 0414, 0416, 0422, 0424, 0426).');
+  }
+  return s.slice(0, 4) + '-' + s.slice(4);
+}
+
+function protegerFormula_(t) { return /^[=+\-@]/.test(t) ? "'" + t : t; }
+
+/** Menú en la hoja de cálculo para el docente. */
+function onOpen() {
+  SpreadsheetApp.getUi().createMenu('Registro Académico')
+    .addItem('1. Preparar sistema', 'prepararSistema')
+    .addItem('2. Definir clave de clase', 'definirClaveClase')
+    .addItem('3. Definir ventana de registro', 'definirVentana')
+    .addItem('4. Reporte de pendientes', 'generarReportePendientes')
+    .addItem('5. Resumen de avance', 'generarResumen')
+    .addItem('6. Alertas de calidad de datos', 'revisarCalidad')
+    .addToUi();
+}
+
+function definirClaveClase() {
+  const ui = SpreadsheetApp.getUi();
+  const r = ui.prompt('Clave de clase', 'Escriba la clave que dará a los estudiantes en clase (vacío = sin clave):', ui.ButtonSet.OK_CANCEL);
+  if (r.getSelectedButton() !== ui.Button.OK) return;
+  const p = PropertiesService.getScriptProperties();
+  const c = r.getResponseText().trim();
+  if (c) p.setProperty('CLAVE_CLASE', c); else p.deleteProperty('CLAVE_CLASE');
+  ui.alert(c ? 'Clave guardada.' : 'Clave eliminada: el acceso queda sin clave.');
+}
+
+/** Lista quién está autorizado en Lista_Clases pero aún no se ha registrado. */
+function generarReportePendientes() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ros = ss.getSheetByName(CFG.ROSTER).getDataRange().getDisplayValues();
+  const reg = ss.getSheetByName(CFG.RECORDS).getDataRange().getDisplayValues();
+  const hr = mapaEncabezados_(ros[0]), hg = mapaEncabezados_(reg[0]);
+  const clave = (c, p, s) => [normalizarCedulaTexto_(c), String(p).trim().toUpperCase(), normalizarTexto_(s)].join('|');
+  const hechos = new Set(reg.slice(1).map(f => clave(f[hg.CEDULA], f[hg.PERIODO], f[hg.SUBPROYECTO])));
+  const filas = ros.slice(1).filter(f => f[hr.CEDULA] && !hechos.has(clave(f[hr.CEDULA], f[hr.PERIODO], f[hr.SUBPROYECTO])))
+    .map(f => [f[hr.CEDULA], f[hr.PERIODO], f[hr.SUBPROYECTO], f[hr.SECCION]]);
+  let sh = ss.getSheetByName('Pendientes') || ss.insertSheet('Pendientes');
+  sh.clear();
+  sh.getRange(1, 1, 1, 4).setValues([['CEDULA', 'PERIODO', 'SUBPROYECTO', 'SECCION']]).setFontWeight('bold');
+  if (filas.length) sh.getRange(2, 1, filas.length, 4).setNumberFormat('@').setValues(filas);
+  return filas.length;
+}
+
+function verificarClaveYVentana_(d) {
+  const p = PropertiesService.getScriptProperties();
+  const clave = p.getProperty('CLAVE_CLASE');
+  if (clave && String(d.claveClase || '').trim().toUpperCase() !== clave.trim().toUpperCase()) {
+    throw new Error('La clave de clase es incorrecta. Solicítela al docente.');
+  }
+  const ini = p.getProperty('VENTANA_INICIO'), fin = p.getProperty('VENTANA_FIN'), ahora = Date.now();
+  const fmt = ms => Utilities.formatDate(new Date(Number(ms)), Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm');
+  if (ini && ahora < Number(ini)) throw new Error('El registro aún no está abierto. Abre el ' + fmt(ini) + '.');
+  if (fin && ahora > Number(fin)) throw new Error('El periodo de registro cerró el ' + fmt(fin) + '. Contacte al docente.');
+}
+
+/** El estudiante escribe solo su cédula y recibe las clases en las que está autorizado. */
+function consultarAsignaciones(datos) {
+  try {
+    datos = datos || {};
+    verificarClaveYVentana_(datos);
+    const tipo = String(datos.tipoCedula || '').trim().toUpperCase();
+    const num = String(datos.numeroCedula || '').replace(/\D/g, '');
+    if (!['V', 'E'].includes(tipo) || !/^\d{5,9}$/.test(num)) throw new Error('Ingrese un tipo de cédula válido (V o E) y entre 5 y 9 dígitos, sin puntos ni guiones.');
+    const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CFG.ROSTER);
+    if (!sh) throw new Error('El responsable académico aún no ha configurado la lista de clases.');
+    const v = sh.getDataRange().getDisplayValues();
+    const hm = mapaEncabezados_(v[0]);
+    const items = [];
+    v.slice(1).forEach(r => {
+      if (normalizarCedulaTexto_(r[hm.CEDULA]) !== tipo + '-' + num) return;
+      const sub = CFG.SUBPROYECTOS.find(s => normalizarTexto_(s) === normalizarTexto_(r[hm.SUBPROYECTO]));
+      const per = String(r[hm.PERIODO]).trim().toUpperCase(), sec = String(r[hm.SECCION]).trim().toUpperCase();
+      if (sub && CFG.PERIODOS.includes(per) && CFG.SECCIONES.includes(sec)) items.push({ periodo: per, subproyecto: sub, seccion: sec });
+    });
+    if (!items.length) return { ok: false, message: 'Esa cédula no aparece en la lista de clases. Verifique el tipo (V/E) y los dígitos, o contacte al docente.' };
+    return { ok: true, items: items };
+  } catch (e) {
+    return { ok: false, message: e && e.message ? e.message : 'No se pudo consultar la lista de clases.' };
+  }
+}
+
+function definirVentana() {
+  const ui = SpreadsheetApp.getUi(), p = PropertiesService.getScriptProperties();
+  const a = ui.prompt('Apertura', 'Fecha de apertura (AAAA-MM-DD). Vacío = sin límite:', ui.ButtonSet.OK_CANCEL);
+  if (a.getSelectedButton() !== ui.Button.OK) return;
+  const b = ui.prompt('Cierre', 'Fecha de cierre, inclusive (AAAA-MM-DD). Vacío = sin límite:', ui.ButtonSet.OK_CANCEL);
+  if (b.getSelectedButton() !== ui.Button.OK) return;
+  const t1 = a.getResponseText().trim(), t2 = b.getResponseText().trim();
+  const ok = t => !t || /^\d{4}-\d{2}-\d{2}$/.test(t);
+  if (!ok(t1) || !ok(t2)) { ui.alert('Formato inválido. Use AAAA-MM-DD, por ejemplo 2026-11-02.'); return; }
+  if (t1) p.setProperty('VENTANA_INICIO', String(new Date(t1 + 'T00:00:00').getTime())); else p.deleteProperty('VENTANA_INICIO');
+  if (t2) p.setProperty('VENTANA_FIN', String(new Date(t2 + 'T23:59:59').getTime())); else p.deleteProperty('VENTANA_FIN');
+  ui.alert('Ventana guardada. Se aplica a todos los accesos desde este momento.');
+}
+
+function volcar_(nombre, encabezado, filas) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sh = ss.getSheetByName(nombre) || ss.insertSheet(nombre);
+  sh.clear();
+  sh.getRange(1, 1, 1, encabezado.length).setValues([encabezado]).setFontWeight('bold');
+  if (filas.length) sh.getRange(2, 1, filas.length, encabezado.length).setNumberFormat('@').setValues(filas.map(f => f.map(String)));
+  sh.setFrozenRows(1);
+}
+
+function generarResumen() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ros = ss.getSheetByName(CFG.ROSTER).getDataRange().getDisplayValues();
+  const reg = ss.getSheetByName(CFG.RECORDS).getDataRange().getValues();
+  const hr = mapaEncabezados_(ros[0]), hg = mapaEncabezados_(reg[0]);
+  const clave = (p, s, c) => [String(p).trim().toUpperCase(), normalizarTexto_(s), String(c).trim().toUpperCase()].join('|');
+  const grupos = {};
+  ros.slice(1).filter(r => r[hr.CEDULA]).forEach(r => {
+    const k = clave(r[hr.PERIODO], r[hr.SUBPROYECTO], r[hr.SECCION]);
+    if (!grupos[k]) grupos[k] = { p: String(r[hr.PERIODO]).trim().toUpperCase(), s: String(r[hr.SUBPROYECTO]).trim(), c: String(r[hr.SECCION]).trim().toUpperCase(), a: 0, r: 0, edades: [], m: 0 };
+    grupos[k].a++;
+  });
+  reg.slice(1).forEach(f => {
+    const g = grupos[clave(f[hg.PERIODO], f[hg.SUBPROYECTO], f[hg.SECCION])];
+    if (!g) return;
+    g.r++;
+    if (Number(f[hg.EDAD])) g.edades.push(Number(f[hg.EDAD]));
+    if (f[hg.ESTADO_CORREO] !== 'VERIFICADO') g.m++;
+  });
+  const filas = Object.keys(grupos).sort().map(k => {
+    const g = grupos[k];
+    const prom = g.edades.length ? (g.edades.reduce((x, y) => x + y, 0) / g.edades.length).toFixed(1) : '';
+    return [g.p, g.s, g.c, g.a, g.r, g.a - g.r, (g.a ? Math.round(100 * g.r / g.a) : 0) + '%', prom, g.m];
+  });
+  volcar_('Resumen', ['PERIODO', 'SUBPROYECTO', 'SECCION', 'AUTORIZADOS', 'REGISTRADOS', 'PENDIENTES', 'AVANCE', 'EDAD_PROMEDIO', 'CORREOS_CON_CAMBIO_PENDIENTE'], filas);
+  return filas.length;
+}
+
+function revisarCalidad() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const v = ss.getSheetByName(CFG.RECORDS).getDataRange().getDisplayValues();
+  const h = mapaEncabezados_(v[0]), out = [], vistos = { C: {}, T: {} };
+  v.slice(1).forEach(r => {
+    const ci = r[h.CEDULA];
+    [['C', String(r[h.CORREO_CONTACTO]).toLowerCase(), 'CORREO REPETIDO'], ['T', String(r[h.TELEFONO]).replace(/\D/g, ''), 'TELEFONO REPETIDO']].forEach(x => {
+      if (!x[1]) return;
+      if (vistos[x[0]][x[1]] && vistos[x[0]][x[1]] !== ci) out.push([x[2], ci, x[1] + ' (también en ' + vistos[x[0]][x[1]] + ')']);
+      else vistos[x[0]][x[1]] = ci;
+    });
+    if (String(r[h.NOMBRE_COMPLETO]).trim().split(' ').length < 3) out.push(['NOMBRE CORTO', ci, r[h.NOMBRE_COMPLETO]]);
+    if (r[h.ESTADO_CORREO] !== 'VERIFICADO') out.push(['CORREO SIN VERIFICAR', ci, r[h.CORREO_CONTACTO]]);
+  });
+  volcar_('Alertas', ['TIPO', 'CEDULA', 'DETALLE'], out);
+  return out.length;
 }

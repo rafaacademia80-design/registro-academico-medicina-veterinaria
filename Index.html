@@ -6,52 +6,54 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Registro académico | Medicina Veterinaria</title>
   <style>
-    :root { --navy:#17324d; --blue:#245b83; --teal:#087e8b; --ink:#243447; --muted:#5e6e7e; --line:#d7e0e8; --bg:#f2f6fa; --white:#fff; --success:#e9f7ef; --success-ink:#17613a; --error:#fff0ef; --error-ink:#9b2c2c; }
+    :root { --cy:#00f0ff; --mg:#ff007f; --ye:#fde047; --card:#0b1120; --line:#1e3a8a; --ink:#e8f1ff; --muted:#8fa3c7; }
     * { box-sizing:border-box; }
-    body { margin:0; padding:28px 14px 44px; background:var(--bg); color:var(--ink); font-family:Arial,Helvetica,sans-serif; line-height:1.45; }
-    .container { width:100%; max-width:900px; margin:0 auto; background:var(--white); border:1px solid var(--line); border-radius:16px; box-shadow:0 12px 34px rgba(23,50,77,.09); overflow:hidden; }
-    .header { padding:28px 30px 23px; background:linear-gradient(125deg,var(--navy),var(--blue)); color:white; }
-    .eyebrow { margin:0 0 8px; font-size:12px; letter-spacing:1px; text-transform:uppercase; font-weight:700; opacity:.9; }
-    h1 { margin:0; font-size:clamp(22px,3.2vw,30px); line-height:1.2; }
-    .header p { margin:10px 0 0; max-width:720px; font-size:14px; color:#e6f1f8; }
+    body { margin:0; padding:32px 14px 48px; background:radial-gradient(circle at 15% 0%,#161240 0,#060913 55%) fixed #060913; color:var(--ink); font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; line-height:1.45; color-scheme:dark; }
+    .container { width:100%; max-width:680px; margin:0 auto; background:var(--card); border:2px solid var(--cy); border-radius:16px; box-shadow:0 0 28px rgba(0,240,255,.35); overflow:hidden; }
+    .header { padding:28px 30px 20px; text-align:center; border-bottom:1px solid var(--line); }
+    .eyebrow { margin:0 0 8px; font-size:12px; letter-spacing:1.5px; text-transform:uppercase; font-weight:700; color:var(--ye); }
+    h1 { margin:0; font-size:clamp(21px,4vw,28px); line-height:1.2; color:var(--mg); text-shadow:0 0 14px rgba(255,0,127,.55); }
+    .header p:not(.eyebrow) { margin:10px auto 0; max-width:520px; font-size:13px; color:var(--muted); }
     main { padding:26px 30px 30px; }
-    .notice { padding:12px 14px; border-left:4px solid var(--teal); background:#eef8fa; border-radius:6px; color:#264a5b; font-size:13px; margin-bottom:22px; }
-    .notice.warning { border-left-color:#b7791f; background:#fff8e7; color:#6f4b13; }
-    .section-title { margin:26px 0 14px; padding-bottom:8px; border-bottom:1px solid var(--line); font-size:16px; color:var(--navy); }
+    .notice { padding:12px 14px; border-left:4px solid var(--cy); background:rgba(0,240,255,.08); border-radius:6px; color:#b8f6ff; font-size:13px; margin-bottom:22px; }
+    .notice.warning { border-left-color:var(--ye); background:rgba(253,224,71,.09); color:#fde68a; }
+    .section-title { margin:26px 0 14px; padding-bottom:8px; border-bottom:1px solid var(--line); font-size:16px; color:var(--cy); text-shadow:0 0 10px rgba(0,240,255,.45); }
     .section-title:first-child { margin-top:0; }
     .grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
     .field { min-width:0; }
     .field.full { grid-column:1 / -1; }
-    label { display:block; margin-bottom:6px; font-size:13px; font-weight:700; color:#334b60; }
-    .required { color:#b42318; }
-    input, select, textarea { width:100%; border:1px solid #bac8d5; border-radius:8px; background:#fff; color:var(--ink); padding:11px 12px; font-size:14px; font-family:inherit; min-height:43px; }
-    input:focus, select:focus, textarea:focus { outline:3px solid rgba(8,126,139,.16); border-color:var(--teal); }
-    input:disabled, select:disabled { background:#edf1f5; color:#596b7b; }
+    label { display:block; margin-bottom:6px; font-size:12px; font-weight:700; color:var(--cy); text-transform:uppercase; letter-spacing:.4px; }
+    .required { color:var(--mg); }
+    input, select, textarea { width:100%; border:1px solid var(--line); border-radius:8px; background:#05070d; color:#fff; padding:11px 12px; font-size:16px; font-family:inherit; min-height:44px; outline:none; transition:all .25s ease; }
+    input::placeholder, textarea::placeholder { color:#5b6b8c; }
+    option { background:#05070d; color:#fff; }
+    input:focus, select:focus, textarea:focus { border-color:var(--cy); box-shadow:0 0 10px rgba(0,240,255,.55); }
+    input:disabled, select:disabled { background:#0a0f1d; color:#6b7a99; }
     textarea { resize:vertical; min-height:95px; }
     .help { display:block; margin-top:5px; color:var(--muted); font-size:12px; }
-    .btn { border:0; border-radius:8px; min-height:44px; padding:12px 18px; cursor:pointer; font-weight:700; font-size:14px; transition:background .15s ease; }
-    .btn:disabled { opacity:.6; cursor:not-allowed; }
-    .btn-primary { background:var(--teal); color:white; }
-    .btn-primary:hover:not(:disabled) { background:#066a75; }
-    .btn-secondary { background:#e6edf3; color:var(--navy); }
-    .btn-secondary:hover:not(:disabled) { background:#d6e1e9; }
+    .btn { border:0; border-radius:8px; min-height:46px; padding:12px 18px; cursor:pointer; font-weight:700; font-size:13px; letter-spacing:.4px; transition:all .25s ease; }
+    .btn:disabled { opacity:.45; cursor:not-allowed; }
+    .btn-primary { background:var(--cy); color:#05070d; box-shadow:0 0 14px rgba(0,240,255,.45); }
+    .btn-primary:hover:not(:disabled) { background:#00c4d1; box-shadow:0 0 22px rgba(0,240,255,.8); }
+    .btn-secondary { background:var(--mg); color:#fff; box-shadow:0 0 14px rgba(255,0,127,.4); }
+    .btn-secondary:hover:not(:disabled) { background:#d9006b; box-shadow:0 0 22px rgba(255,0,127,.75); }
     .actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:20px; }
     #zonaDatos { display:none; margin-top:8px; }
-    .message { display:none; margin:0 0 18px; padding:12px 14px; border-radius:8px; font-size:14px; }
-    .message.ok { display:block; background:var(--success); color:var(--success-ink); border:1px solid #b9e3c9; }
-    .message.error { display:block; background:var(--error); color:var(--error-ink); border:1px solid #f0c1bd; }
-    .privacy { display:flex; align-items:flex-start; gap:10px; margin-top:20px; font-size:12px; color:var(--muted); }
-    .privacy input { width:17px; min-height:17px; height:17px; margin-top:2px; flex:0 0 auto; }
+    .message { display:none; margin:0 0 18px; padding:12px 14px; border-radius:8px; font-size:14px; font-weight:600; }
+    .message.ok { display:block; background:#064e3b; color:#34d399; border:1px solid #059669; box-shadow:0 0 14px rgba(52,211,153,.3); }
+    .message.error { display:block; background:#4c0519; color:#fda4af; border:1px solid #e11d48; box-shadow:0 0 14px rgba(244,63,94,.3); }
+    .privacy { display:flex; align-items:flex-start; gap:10px; margin-top:20px; font-size:12px; color:var(--muted); text-transform:none; }
+    .privacy input { width:18px; min-height:18px; height:18px; margin-top:2px; flex:0 0 auto; accent-color:var(--cy); }
     .footer { border-top:1px solid var(--line); margin-top:26px; padding-top:16px; color:var(--muted); font-size:11px; }
     .hidden { display:none !important; }
-    @media (max-width:640px) { body{padding:10px 8px 24px;} main{padding:20px 16px 24px;} .header{padding:24px 18px;} .grid{grid-template-columns:1fr;} .field.full{grid-column:auto;} .actions .btn{width:100%;} }
+    @media (max-width:640px) { body{padding:10px 8px 24px;} main{padding:20px 16px 24px;} .header{padding:22px 16px 16px;} .grid{grid-template-columns:1fr;} .field.full{grid-column:auto;} .actions .btn{width:100%;} }
   </style>
 </head>
 <body>
   <div class="container">
     <header class="header">
-      <p class="eyebrow">Carrera de Medicina Veterinaria</p>
-      <h1>Registro y actualización de datos académicos</h1>
+      <p class="eyebrow">🐄 Carrera de Medicina Veterinaria 🩺</p>
+      <h1>REGISTRO DE DATOS ACADÉMICOS</h1>
       <p>Información de los cuatro subproyectos de Sistemas de Producción Animal y Manejo de Sistemas de Producción Animal.</p>
     </header>
     <main>
@@ -59,7 +61,7 @@
       <div class="notice"><strong>Autorización académica:</strong> solo se comprueban la cédula, el periodo lectivo, el subproyecto y la sección contra la lista de clases. Los nombres, edad, correo, teléfono y residencia deben ser aportados directamente por el estudiante y escritos con datos reales y actuales.</div>
 
       <form id="accesoForm">
-        <h2 class="section-title">1. Identificación y asignación académica</h2>
+        <h2 class="section-title">🪪 1. Identificación y asignación académica</h2>
         <fieldset id="camposAcceso" style="border:0;padding:0;margin:0;min-width:0">
           <div class="grid">
             <div class="field">
@@ -89,6 +91,15 @@
                 <option value="Manejo de Sistemas de Producción Animal II">Manejo de Sistemas de Producción Animal II — Cuarto semestre</option>
               </select>
             </div>
+            <div class="field full">
+              <label for="claveClase">Clave de clase</label>
+              <input id="claveClase" autocomplete="off" maxlength="30" placeholder="La indica el docente en clase">
+            </div>
+            <div class="field full"><button class="btn btn-secondary" id="btnBuscar" type="button">BUSCAR MIS ASIGNACIONES</button></div>
+            <div class="field full hidden" id="bloqueAsignacion">
+              <label for="asignacion">Seleccione su clase <span class="required">*</span></label>
+              <select id="asignacion"></select>
+            </div>
           </div>
         </fieldset>
         <div class="actions"><button class="btn btn-primary" id="btnValidarAcceso" type="submit">VALIDAR MI ASIGNACIÓN</button></div>
@@ -97,7 +108,7 @@
       <section id="zonaDatos" aria-labelledby="tituloDatos">
         <div id="modoRegistro" class="notice"></div>
         <form id="datosForm">
-          <h2 id="tituloDatos" class="section-title">2. Datos personales y de contacto</h2>
+          <h2 id="tituloDatos" class="section-title">📝 2. Datos personales y de contacto</h2>
           <div class="grid">
             <div class="field">
               <label for="primerApellido">Primer apellido <span class="required">*</span></label>
@@ -117,9 +128,12 @@
               <input id="segundoNombre" maxlength="60" placeholder="Ej. CARLOS">
               <small class="help">Si no tiene segundo nombre, déjelo vacío.</small>
             </div>
+            <div class="field full">
+              <div class="notice warning" style="margin:0"><strong>Escriba primero sus APELLIDOS y después sus NOMBRES</strong>, tal como aparecen en su cédula.<br><span id="vistaNombre"></span></div>
+            </div>
             <div class="field">
-              <label for="edad">Edad actual (años) <span class="required">*</span></label>
-              <input id="edad" type="number" min="15" max="90" step="1" inputmode="numeric" required>
+              <label for="fechaNacimiento">Fecha de nacimiento <span class="required">*</span></label>
+              <input id="fechaNacimiento" type="date" min="1935-01-01" required>
             </div>
             <div class="field">
               <label for="correo">Correo de contacto actual <span class="required">*</span></label>
@@ -131,7 +145,7 @@
             </div>
             <div class="field">
               <label for="telefono">Número de teléfono actual <span class="required">*</span></label>
-              <input id="telefono" type="tel" maxlength="25" autocomplete="tel" pattern="[0-9+() .-]{7,25}" placeholder="Ej. +58 414 1234567" required>
+              <input id="telefono" type="tel" maxlength="25" autocomplete="tel" placeholder="Ej. 0414-1234567" required>
             </div>
             <div class="field full">
               <label for="residencia">Lugar de residencia <span class="required">*</span></label>
@@ -144,7 +158,7 @@
             </div>
           </div>
 
-          <h2 class="section-title">3. Verificación del correo y confirmación</h2>
+          <h2 class="section-title">🔐 3. Verificación del correo y confirmación</h2>
           <p class="help">Para un registro nuevo, el código llegará al correo que acaba de declarar. Para una actualización, llegará al correo de autenticación usado en el registro previo. Si ya no puede acceder a ese correo, contacte al docente para recuperar el acceso.</p>
           <div class="actions"><button class="btn btn-secondary" id="btnSolicitarCodigo" type="button">ENVIAR CÓDIGO DE VERIFICACIÓN</button></div>
           <p id="correoDestino" class="help" aria-live="polite"></p>
@@ -191,7 +205,8 @@
       numeroCedula: byId('numeroCedula').value.trim(),
       periodo: byId('periodo').value,
       subproyecto: byId('subproyecto').value,
-      seccion: byId('seccion').value
+      seccion: byId('seccion').value,
+      claveClase: byId('claveClase').value.trim()
     };
   }
   function datosPersonales() {
@@ -200,7 +215,7 @@
       segundoApellido: byId('segundoApellido').value,
       primerNombre: byId('primerNombre').value,
       segundoNombre: byId('segundoNombre').value,
-      edad: byId('edad').value,
+      fechaNacimiento: byId('fechaNacimiento').value,
       correo: byId('correo').value.trim(),
       correoConfirmacion: byId('correoConfirmacion').value.trim(),
       telefono: byId('telefono').value.trim(),
@@ -210,6 +225,37 @@
     };
   }
 
+  ['periodo','seccion','subproyecto'].forEach(function(i) { const e = byId(i); e.required = false; e.closest('.field').classList.add('hidden'); });
+  byId('btnValidarAcceso').disabled = true;
+  byId('fechaNacimiento').max = new Date().toISOString().slice(0, 10);
+  let asignaciones = [];
+  function aplicarAsignacion() {
+    const x = asignaciones[byId('asignacion').value];
+    byId('periodo').value = x ? x.periodo : '';
+    byId('subproyecto').value = x ? x.subproyecto : '';
+    byId('seccion').value = x ? x.seccion : '';
+    byId('btnValidarAcceso').disabled = !x;
+  }
+  byId('asignacion').addEventListener('change', aplicarAsignacion);
+  accesoForm.addEventListener('reset', function() { setTimeout(function() { asignaciones = []; byId('bloqueAsignacion').classList.add('hidden'); byId('btnValidarAcceso').disabled = true; }, 0); });
+  byId('btnBuscar').addEventListener('click', function() {
+    ocultarMensaje();
+    const a = datosAcceso();
+    if (!/^[0-9]{5,9}$/.test(a.numeroCedula)) { mostrarMensaje('La cédula debe tener entre 5 y 9 dígitos, sin puntos, espacios ni guiones.', 'error'); return; }
+    const btn = this; btn.disabled = true; btn.textContent = 'BUSCANDO...';
+    google.script.run.withSuccessHandler(function(r) {
+      btn.disabled = false; btn.textContent = 'BUSCAR MIS ASIGNACIONES';
+      if (!r || !r.ok) { mostrarMensaje((r && r.message) || 'No se pudo consultar la lista.', 'error'); return; }
+      asignaciones = r.items;
+      byId('asignacion').innerHTML = '<option value="">Seleccione su clase</option>' + r.items.map(function(x, i) { return '<option value="' + i + '">' + x.periodo + ' · ' + x.subproyecto + ' · Sección ' + x.seccion + '</option>'; }).join('');
+      byId('bloqueAsignacion').classList.remove('hidden');
+      if (r.items.length === 1) { byId('asignacion').value = '0'; aplicarAsignacion(); }
+      mostrarMensaje('Cédula encontrada. Seleccione su clase y pulse VALIDAR.', 'ok');
+    }).withFailureHandler(function(err) {
+      btn.disabled = false; btn.textContent = 'BUSCAR MIS ASIGNACIONES';
+      mostrarMensaje(err && err.message ? err.message : 'Error de conexión. Inténtelo nuevamente.', 'error');
+    }).consultarAsignaciones(a);
+  });
   accesoForm.addEventListener('submit', function(e) {
     e.preventDefault(); ocultarMensaje();
     const a = datosAcceso();
@@ -260,6 +306,13 @@
       try { this.setSelectionRange(pos, pos); } catch (_) {}
     });
   });
+  const IDS_NOMBRE = ['primerApellido','segundoApellido','primerNombre','segundoNombre'];
+  function actualizarVista() {
+    const n = IDS_NOMBRE.map(i => byId(i).value.trim()).filter(Boolean).join(' ');
+    byId('vistaNombre').textContent = n ? 'Quedará registrado como: ' + n : '';
+  }
+  IDS_NOMBRE.forEach(i => byId(i).addEventListener('input', actualizarVista));
+  datosForm.addEventListener('reset', () => setTimeout(actualizarVista, 0));
   byId('numeroCedula').addEventListener('input', function() { this.value = this.value.replace(/\D/g, '').slice(0,9); });
   byId('codigoVerificacion').addEventListener('input', function() { this.value = this.value.replace(/\D/g, '').slice(0,6); });
 
